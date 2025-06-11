@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Widevine L1 Checker</title>
+    <!-- Tailwind CSS CDN for easy styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        .message-box {
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 24px;
+            font-weight: 600;
+        }
+        .message-box.success {
+            background-color: #d1fae5; /* Green-100 */
+            color: #065f46; /* Green-800 */
+        }
+        .message-box.error {
+            background-color: #fee2e2; /* Red-100 */
+            color: #991b1b; /* Red-800 */
+        }
+        .message-box.info {
+            background-color: #e0f2fe; /* Blue-100 */
+            color: #1e40af; /* Blue-800 */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Widevine L1 Security Checker</h1>
+        <p class="text-gray-600 mb-8">
+            Click the button below to check if your browser environment supports Widevine L1.
+            This check attempts to request the highest level of Widevine DRM (Hardware Secure All).
+        </p>
+
+        <button id="checkButton"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-300 ease-in-out shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75">
+            Check Widevine L1 Support
+        </button>
+
+        <div id="result" class="message-box info hidden">
+            <!-- Results will be displayed here -->
+        </div>
+    </div>
+
+    <script>
+        // Function to display messages in the UI
+        function displayMessage(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = message;
+            resultDiv.className = `message-box ${type}`; // Apply dynamic styling based on type
+            resultDiv.classList.remove('hidden'); // Show the message box
+        }
+
+        /**
+         * Checks if the current browser environment supports Widevine L1 security level.
+         * Widevine L1 implies that all cryptographic operations and content handling
+         * are performed within a hardware-backed Trusted Execution Environment (TEE).
+         *
+         * @returns {Promise<boolean>} A promise that resolves to true if Widevine L1 is supported,
+         * false otherwise.
+         */
+        const isWidevineL1Secured = async () => {
+            // Define the video content type and codec for which Widevine L1 access is being checked.
+            // 'avc3.640028' corresponds to H.264 High Profile, Level 4.0.
+            const videoContentType = 'video/mp4;codecs="avc3.640028"';
+
+            // Configure the MediaKeySystemAccess request.
+            // We are requesting 'com.widevine.alpha' (the identifier for Widevine DRM).
+            // The 'robustness: 'HW_SECURE_ALL'' indicates a request for Widevine L1,
+            // where all cryptographic operations and content processing are hardware-secured.
+            const config = [
+                {
+                    videoCapabilities: [
+                        {
+                            contentType: videoContentType,
+                            robustness: 'HW_SECURE_ALL', // Specifies the desired security level (L1)
+                        },
+                    ],
+                },
+            ];
+
+            // Display an informational message while the check is in progress.
+            displayMessage("Checking for Widevine L1 support...", "info");
+
+            try {
+                // Attempt to request MediaKeySystemAccess for Widevine with L1 robustness.
+                // The `navigator.requestMediaKeySystemAccess()` method asynchronously
+                // determines if the user agent (browser) and the underlying hardware
+                // can support the requested DRM system and its security level.
+                // This call might prompt the user for permission in some browsers
+                // if the website is trying to uniquely identify their device for protected content.
+                await navigator.requestMediaKeySystemAccess('com.widevine.alpha', config);
+
+                // If the promise resolves successfully, it means Widevine L1 access is granted.
+                displayMessage("🎉 Your browser environment supports Widevine L1 security!", "success");
+                return true;
+            } catch (error) {
+                // If the promise rejects, it means Widevine L1 access is not available
+                // for the specified configuration. This could be due to several reasons:
+                // - The browser itself does not support Widevine L1 (e.g., desktop Chrome on Mac).
+                // - The user denied permission to identify their device or access DRM features.
+                // - Other browser-specific errors or missing components.
+                console.error("Widevine L1 access not available:", error);
+                displayMessage(`❌ Widevine L1 security is NOT supported in this environment. Reason: ${error.message || "Unknown error."}`, "error");
+                return false;
+            }
+        };
+
+        // Add an event listener to the button to trigger the check.
+        document.getElementById('checkButton').addEventListener('click', isWidevineL1Secured);
+
+        // Initial message to prompt user to click the button
+        document.addEventListener('DOMContentLoaded', () => {
+            displayMessage("Click the button to check Widevine L1 support.", "info");
+        });
+    </script>
+</body>
+</html>
