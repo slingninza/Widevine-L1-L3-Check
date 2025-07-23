@@ -174,7 +174,7 @@
                 await navigator.requestMediaKeySystemAccess('com.widevine.alpha', config);
 
                 // If the promise resolves successfully, it means Widevine L1 access is granted.
-                displayMessage("🎉 Your browser environment supports Widevine L1 security!", "success");
+                displayMessage("Your browser environment supports Widevine L1 security!", "success");
                 return true;
             } catch (error) {
                 // If the promise rejects, it means Widevine L1 access is not available
@@ -183,7 +183,7 @@
                 // - The user denied permission to identify their device or access DRM features.
                 // - Other browser-specific errors or missing components.
                 console.error("Widevine L1 access not available:", error);
-                displayMessage(`❌ Widevine L1 security is NOT supported in this environment. Reason: ${error.message || "Unknown error."}`, "error");
+                displayMessage(`Widevine L1 security is NOT supported in this environment. Reason: ${error.message || "Unknown error."}`, "error");
                 return false;
             }
         };
