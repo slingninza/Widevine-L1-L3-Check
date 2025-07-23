@@ -105,7 +105,6 @@
                 const level = robustnessLevels[i];
                 videoTestConfig[0].videoCapabilities[0].robustness = level;
                 try {
-                  // eslint-disable-next-line no-await-in-loop
                   await navigator.requestMediaKeySystemAccess('com.widevine.alpha', videoTestConfig);
                   videoRobustness = level;
                 } catch (err) {}
@@ -115,7 +114,6 @@
                 const level = robustnessLevels[j];
                 audioTestConfig[0].audioCapabilities[0].robustness = level;
                 try {
-                  // eslint-disable-next-line no-await-in-loop
                   await navigator.requestMediaKeySystemAccess('com.widevine.alpha', audioTestConfig);
                   audioRobustness = level;
                 } catch (err) {}
