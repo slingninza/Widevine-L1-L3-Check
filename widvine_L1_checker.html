@@ -66,6 +66,67 @@
     </div>
 
     <script>
+           // Function to detect  level of Widevine
+            async function getWidevineRobustness () {
+              const robustnessLevels = [
+                'SW_SECURE_CRYPTO', // Widevine L3
+                'SW_SECURE_DECODE', // Widevine L3
+                'HW_SECURE_CRYPTO', // Widevine L2
+                'HW_SECURE_DECODE', // Widevine L1
+                'HW_SECURE_ALL', // Widevine L1
+              ];
+            
+              const videoTestConfig = [
+                {
+                  videoCapabilities: [
+                    {
+                      contentType: 'video/mp4; codecs="avc1.42E01E"',
+                      robustness: 'SW_SECURE_DECODE',
+                    },
+                  ],
+                },
+              ];
+            
+              const audioTestConfig = [
+                {
+                  audioCapabilities: [
+                    {
+                      contentType: 'audio/mp4;codecs="mp4a.40.2"',
+                      robustness: 'SW_SECURE_DECODE',
+                    },
+                  ],
+                },
+              ];
+            
+              let videoRobustness;
+              let audioRobustness;
+            
+              for (let i = 0; i < robustnessLevels.length; i++) {
+                const level = robustnessLevels[i];
+                videoTestConfig[0].videoCapabilities[0].robustness = level;
+                try {
+                  // eslint-disable-next-line no-await-in-loop
+                  await navigator.requestMediaKeySystemAccess('com.widevine.alpha', videoTestConfig);
+                  videoRobustness = level;
+                } catch (err) {}
+              }
+            
+              for (let j = 0; j < robustnessLevels.length; j++) {
+                const level = robustnessLevels[j];
+                audioTestConfig[0].audioCapabilities[0].robustness = level;
+                try {
+                  // eslint-disable-next-line no-await-in-loop
+                  await navigator.requestMediaKeySystemAccess('com.widevine.alpha', audioTestConfig);
+                  audioRobustness = level;
+                } catch (err) {}
+              }
+            
+              return {
+                videoRobustness: videoRobustness,
+                audioRobustness: audioRobustness,
+              }
+            }
+        
         // Function to display messages in the UI
         function displayMessage(message, type = 'info') {
             const resultDiv = document.getElementById('result');
